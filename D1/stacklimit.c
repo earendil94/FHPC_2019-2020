@@ -104,6 +104,11 @@ void func2(void)
   return;
 }
 
+//BRAND_NOTES
+//Might be interesting to allocate memory on the stack with alloca function so that you don't need the overhead work to allocate memory on the heap with malloc. 
+//You just want it if you need not to return stuff from the function. (When the function closes the stack gets refreshed but not the heap!
+//Notice that the memory available on the heap is basically your whole RAM, but the space used for the OS processes.
+//
 
 void func3(unsigned int S)
 /*

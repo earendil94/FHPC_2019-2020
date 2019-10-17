@@ -42,6 +42,7 @@ int main( void )
 
   int array[ 3 ];
 
+  //Trying to access to array[3] which does not exist in the array defined in the stack. I am trying to access a memory location which is not in the stack! If you define other stuff in the stack, you can actually get out of the boundaries of your array, as long as you go in a memory not protected by you. 
   for ( int ii = 0; ii <= 3; ii++ )
     array[ ii ] = ii;
 
