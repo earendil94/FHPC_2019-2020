@@ -1,0 +1,18 @@
+1) qstat -l lists the job run on the server
+2) qstat -r just jobs that are running
+3) showbf: shows the backfill
+4) qsub -l nodes=1:ppn=1 -I This opens an interfaced job for one node and one processor.
+	-l walltime=00:15:00, specifies the sup_time
+	You login into a node.
+	exit logs you out of course
+5) If you ls into a node you are logged into, it just yields the files of your master node
+
+6) tracejob jobname traces you jobs
+7) qstat -u user gets you the jobs you ran
+8) qsub .... name_of_shell.sh submits the job into a node
+9) qstat -Q lists the actual queues.
+10) qstat -f job_id lets you see what's up with your job in the queue.
+11) You are not allowed to ssh directly to a node.
+12) top command lets you see the running processes on the node.
+13) CAREFUL: when you submit the job to a node, it gets executed in the home directory.
+   
