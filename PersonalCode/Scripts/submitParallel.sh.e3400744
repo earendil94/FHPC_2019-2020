@@ -1,0 +1,10 @@
+grep: configParallel.cfg: No such file or directory
+grep: configParallel.cfg: No such file or directory
+loading dependency gnu/4.9.2
+loading dependency numactl/2.0.10
+loading dependency hwloc/1.10.0
+--------------------------------------------------------------------------
+No executable was specified on the mpirun command line.
+
+Aborting.
+--------------------------------------------------------------------------
