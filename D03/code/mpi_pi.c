@@ -1,11 +1,12 @@
 /*
  * Copyright (C) 2015 - 2016 Master in High Performance Computing
  *
- * Adapted from the net by  Giuseppe Brandino. 
- * Last modified by Alberto Sartori. 
+ * Adapted from the net by  Giuseppe Brandino.
+ * Last modified by Alberto Sartori.
  * Addedd time and promoted to long long all important variables
  */
-
+//To compile gcc mpi_pi.c is not enough
+//Load a module in 
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -21,11 +22,11 @@ int main ( int argc , char *argv[ ] )
   double x, y ;
 
   // number of points inside the circle
-  long long int M, local_M ; 
+  long long int M, local_M ;
   double pi ;
-   
-  // times 
-  double start_time, end_time;   
+
+  // times
+  double start_time, end_time;
   int myid , numprocs , proc ;
   MPI_Status status;
   MPI_Request request;
@@ -47,15 +48,15 @@ int main ( int argc , char *argv[ ] )
 // take time of processors after initial I/O operation
   start_time = MPI_Wtime();
 
-  // initialize random numbers 
+  // initialize random numbers
   srand48(SEED*(myid+1)) ; // seed the number generator
   local_M=0;
   long long int i;
   for (i=0; i<N ; i++) {
     // take a point P(x,y) inside the unit square
-    x = drand48(); 
+    x = drand48();
     y = drand48();
-      
+
     // check if the point P(x,y) is inside the circle
     if ((x*x + y*y)<1)
       local_M++;
