@@ -1,9 +1,9 @@
 
 /* =============================================================================
- * This file is part of the exercises for the Lectures on 
+ * This file is part of the exercises for the Lectures on
  *   "Foundations of High Performance Computing"
- * given at 
- *   Master in HPC and 
+ * given at
+ *   Master in HPC and
  *   Master in Data Science and Scientific Computing
  * @ SISSA, ICTP and University of Trieste
  *
@@ -18,7 +18,7 @@
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
  *
- *     You should have received a copy of the GNU General Public License 
+ *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
@@ -34,18 +34,18 @@ int main ( int argc, char **argv )
   if ( argc > 1)
     // remember: arg 0 is the name of the program itself
     {
-      
+
       printf( "\nexploring my %d argument%c:\n", argc-1, (argc>2)?'s':' ' );
-      for ( int i = 1; i < argc; i++ )       
-	{
-	  printf( "\targument %d is : %s\n", i, *(argv+i) );
-	}
+      for ( int i = 1; i < argc; i++ )
+	     {
+	        printf( "\targument %d is : %s\n", i, *(argv+i) );
+	       }
       printf( "\n" );
-	
+
     }
-  
+
   else
-    
+
     printf ( "no arguments were given\n\n" );
 
   return 0;
