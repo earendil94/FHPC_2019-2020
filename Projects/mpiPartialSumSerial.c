@@ -11,7 +11,7 @@ int main(int argc, char **argv){
 
   const int root = 0;
 
-  double start_time, end_time;
+  double start_time, end_time, t_read, t_comm, t_comp;
   int p, rank;
   long long unsigned int i, n;
   long long unsigned int *partial_array;
@@ -39,24 +39,25 @@ int main(int argc, char **argv){
     n = atoi(argv[1]);
 
     end_time = MPI_Wtime();
-    double t_read = end_time - start_time;
+    t_read = end_time - start_time;
     printf("T_read: %.9f\n", t_read);
 
     start_time = MPI_Wtime();
 
     for( i = root+1; i < p; i++){
-        MPI_Send(&n, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+        MPI_Send(&n, 1, MPI_UNSIGNED_LONG, i, i, MPI_COMM_WORLD);
     }
 
     end_time = MPI_Wtime();
-    double t_comm = end_time - start_time;
-    printf("T_comm_broadcast: %.9f\n", t_comm);
+    t_comm = end_time - start_time;
+    printf("T_comm: %.9f\n", t_comm);
   } else {
-    MPI_Recv(&n, 1, MPI_INT, root, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&n, 1, MPI_UNSIGNED_LONG, root, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 
   sub_array_dimension = n/p;
   sub_array_remainder = n%p;
+  //printf("sub_array_dimension: %d\n",sub_array_dimension );
 
   if(rank < sub_array_remainder){
     sub_array_dimension++;
@@ -79,25 +80,39 @@ int main(int argc, char **argv){
   }
 
   end_time = MPI_Wtime();
-  printf("T_comp is: %.9f\n", end_time - start_time);
+
+  t_comp = end_time - start_time;
 
   partial_sum_ar = malloc(p*sizeof(long long unsigned int));
 
-  MPI_Send(&partial_sum, 1, MPI_INT, root , rank, MPI_COMM_WORLD);
+  MPI_Send(&partial_sum, 1, MPI_UNSIGNED_LONG, root , rank, MPI_COMM_WORLD);
+
 
 
   if( rank == root){
 
     start_time = MPI_Wtime();
 
-    for(i = 1; i < p; i++){
-      MPI_Recv( &partial_sum_ar[i], 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      partial_sum += partial_sum_ar[i];
-    };
+    for(i = 1; i < p; i++)
+      MPI_Recv( &partial_sum_ar[i], 1, MPI_UNSIGNED_LONG, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     end_time = MPI_Wtime();
-    printf("Receving time+calculation time: %.9f\n", end_time - start_time );
-    printf("Our partial sum is: %d\n", partial_sum);
+
+    t_read = t_read + end_time - start_time;
+
+    start_time = MPI_Wtime();
+
+    for(i = 1; i<p; i++)
+      partial_sum += partial_sum_ar[i];
+
+    end_time = MPI_Wtime();
+
+    t_comp = t_comp + end_time - start_time;
+
+    printf("T_read: %.9f\n", t_read);
+    printf("T_comp: %.9f\n", t_comp);
+    printf("T_comm: %.9f\n", t_comm);
+    printf("Our partial sum is: %llu\n", partial_sum);
   }
 
 

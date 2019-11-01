@@ -1,0 +1,8 @@
+
+mpiPartialSumSerial.x:18291 terminated with signal 11 at PC=7f8262f0b0b7 SP=7ffdcaf11c50.  Backtrace:
+/u/shared/programs/x86_64//openmpi/1.8.3/gnu/4.9.2/torque/lib/libopen-pal.so.6(opal_memory_ptmalloc2_int_malloc+0x847)[0x7f8262f0b0b7]
+/u/shared/programs/x86_64//openmpi/1.8.3/gnu/4.9.2/torque/lib/libopen-pal.so.6(opal_memory_ptmalloc2_malloc+0x99)[0x7f8262f0b7d9]
+/lib64/libc.so.6(__libc_calloc+0x33a)[0x3aac07a89a]
+mpiPartialSumSerial.x[0x400dce]
+/lib64/libc.so.6(__libc_start_main+0xfd)[0x3aac01ed1d]
+mpiPartialSumSerial.x[0x400a59]
