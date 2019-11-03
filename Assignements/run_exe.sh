@@ -7,13 +7,13 @@ run_serial(){
 	#echo $2
 	#echo $3
 	#echo "$3 $1"
-	#{ time ./$3 $1 ; } 2> $2
-	time ./$3 $1 
+	{ time ./$3 $1 ; } 1>$2 2> $2
+	#time ./$3 $1
 }
 
 #Pass p as first argument, n as second argument, result file as third argument, program as fourth argument
 run_parallel(){
-	time mpirun -np $1 $4 $2 > $3
+	{ time mpirun -np $1 $4 $2 ; } 1> $3 2> $3
 }
 
 #Pass filename_p as first argument, csv name as second argument
@@ -100,12 +100,15 @@ then
 		done
 	elif [[ $SCALING_TEST == "WEAK" ]]
 	then
-		for p_val in $P_VALUES
+		for n_ in $N_VALUES
 		do
-			n_val=$(( p_val * $N_VALUES ))
-			run_parallel $p_val $n_val ${RESULT_FILE}_${p_val}_${n_val} $CURR_PROGRAM
-			result_files_to_csv ${RESULT_FILE}_${p_val}_${n_val} $CSV_FILE
-			rm ${RESULT_FILE}_${p_val}_${n_val}
+			for p_val in $P_VALUES
+			do
+				n_val=$(( p_val * $n_ ))
+				run_parallel $p_val $n_val ${RESULT_FILE}_${p_val}_${n_val} $CURR_PROGRAM
+				result_files_to_csv ${RESULT_FILE}_${p_val}_${n_val} $CSV_FILE
+				rm ${RESULT_FILE}_${p_val}_${n_val}
+			done
 		done
 	fi
 else
@@ -119,12 +122,15 @@ else
 		done
 	elif [[ $SCALING_TEST == "WEAK" ]]
 	then
-		for p_val in $P_VALUES
+		for n_ in $N_VALUES
 		do
-			n_val=$(( p_val * $N_VALUES ))
-			run_serial $n_val ${RESULT_FILE}_${p_val}_${n_val} $CURR_PROGRAM
-			result_files_to_csv ${RESULT_FILE}_${p_val}_${n_val} $CSV_FILE
-			rm ${RESULT_FILE}_${p_val}_${n_val}
+			for p_val in $P_VALUES
+			do
+				n_val=$(( p_val * $n_ ))
+				run_serial $n_val ${RESULT_FILE}_1_${n_val} $CURR_PROGRAM
+				result_files_to_csv ${RESULT_FILE}_1_${n_val} $CSV_FILE
+				rm ${RESULT_FILE}_1_${n_val}
+			done
 		done
 	fi
 fi

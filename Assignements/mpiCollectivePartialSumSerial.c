@@ -16,10 +16,15 @@ int main(int argc, char **argv){
   long long unsigned int i, n;
   long long unsigned int *partial_array;
   long long unsigned int partial_sum = 0;
-  long long unsigned int *partial_sum_ar;
+  long long unsigned int total_sum = 0;
+  //long long unsigned int *partial_sum_ar;
+
+
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &p);
+
+  //printf("Hi, I'm rank %d\n", rank);
 
   if( argc != 2){
     fprintf(stderr, "Program should pass the N of the sum to compute \n");
@@ -43,18 +48,25 @@ int main(int argc, char **argv){
     t_read = end_time - start_time;
     //printf("T_read: %.9f\n", t_read);
 
-    start_time = MPI_Wtime();
+  //  start_time = MPI_Wtime();
 
+
+/*
     for( i = root+1; i < p; i++){
         MPI_Send(&n, 1, MPI_UNSIGNED_LONG, i, i, MPI_COMM_WORLD);
     }
-
-    end_time = MPI_Wtime();
-    t_comm = end_time - start_time;
+*/
+    //end_time = MPI_Wtime();
+    //t_comm = end_time - start_time;
     //printf("T_comm: %.9f\n", t_comm);
-  } else {
-    MPI_Recv(&n, 1, MPI_UNSIGNED_LONG, root, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
+  start_time = MPI_Wtime();
+  MPI_Bcast(&n, 1, MPI_UNSIGNED_LONG, root, MPI_COMM_WORLD);
+  end_time = MPI_Wtime();
+  /*
+  else {
+    MPI_Recv(&n, 1, MPI_UNSIGNED_LONG, root, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  } */
 
   sub_array_dimension = n/p;
   sub_array_remainder = n%p;
@@ -83,12 +95,30 @@ int main(int argc, char **argv){
   end_time = MPI_Wtime();
 
   t_comp = end_time - start_time;
+  //printf("Rank: %d, Our partial sum is: %llu\n", rank, partial_sum);
+  //partial_sum_ar = malloc(p*sizeof(long long unsigned int));
 
-  partial_sum_ar = malloc(p*sizeof(long long unsigned int));
+  //MPI_Send(&partial_sum, 1, MPI_UNSIGNED_LONG, root , rank, MPI_COMM_WORLD);
+  start_time = MPI_Wtime();
+  MPI_Reduce(&partial_sum, &total_sum, 1, MPI_UNSIGNED_LONG, MPI_SUM, root, MPI_COMM_WORLD );
+  end_time = MPI_Wtime();
+  t_comm = t_comm + end_time - start_time;
 
-  MPI_Send(&partial_sum, 1, MPI_UNSIGNED_LONG, root , rank, MPI_COMM_WORLD);
+  walltime_end = MPI_Wtime();
+
+  if( rank == root){
+    printf( "\n # walltime on processor %i : %10.8f \n",rank, walltime_end - walltime_start ) ;
+    printf("Total sum: %llu\n", total_sum);
+    printf("T_read: %.9f\n", t_read);
+    printf("T_comp: %.9f\n", t_comp);
+    printf("T_comm: %.9f\n", t_comm);
+  }
+  else
+    printf( "\n # walltime on processor %i : %10.8f \n",rank, walltime_end - walltime_start ) ;
 
 
+
+  /*
   if( rank == root){
 
     start_time = MPI_Wtime();
@@ -118,7 +148,7 @@ int main(int argc, char **argv){
     walltime_end = MPI_Wtime();
     printf ( "\n # walltime on processor %i : %10.8f \n",rank, walltime_end - walltime_start ) ;
   }
-
+  */
 
   MPI_Finalize();
 
