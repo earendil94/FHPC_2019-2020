@@ -7,13 +7,13 @@ run_serial(){
 	#echo $2
 	#echo $3
 	#echo "$3 $1"
-	{ time ./$3 $1 ; } 1>$2 2> $2
+	{ /usr/bin/time -f%e:elapsed ./$3 $1 ; } 1>$2 2> $2
 	#time ./$3 $1
 }
 
 #Pass p as first argument, n as second argument, result file as third argument, program as fourth argument
 run_parallel(){
-	{ time mpirun -np $1 $4 $2 ; } 1> $3 2> $3
+	{ /usr/bin/time -f%e:elapsed mpirun -np $1 $4 $2 ; } 1>$3 2> $3
 }
 
 #Pass filename_p as first argument, csv name as second argument
@@ -22,6 +22,7 @@ result_files_to_csv(){
 
 	export P=$(echo $1 | cut -d"_" -f3)
 	export N=$(echo $1 | cut -d"_" -f4)
+	ONLY_ELAPSED=$3
 	#In case we are extracting walltime from serial app
 
 	if [[ $CURR_PROGRAM == *"PartialSum"* ]]
@@ -29,27 +30,33 @@ result_files_to_csv(){
 		serial_sum_elab $1 $2
 	fi
 
-	if (( $P == 1 ))
+	if [[ $ONLY_ELAPSED != "ELAPSED" ]]
 	then
-		WALLTIME=$(grep "walltime" $1 | cut -d":" -f2)
-		if [[ $WALLTIME == "" ]]
+		if (( $P == 1 ))
 		then
-			USERTIME=$(grep "user" $1 | cut -d"m" -f2 | cut -d"s" -f1)
-			echo "${P};${P};${USERTIME};${N}" >> $2
+			WALLTIME=$(grep "walltime" $1 | cut -d":" -f2)
+			if [[ $WALLTIME == "" ]]
+			then
+				ELAPSED_TIME=$(grep "elapsed" $1 | cut -d":" -f1)
+				echo "${P};${P};${ELAPSED_TIME};${N}" >> $2
+			else
+				echo "${P};${P};${WALLTIME};${N}" >> $2
+			fi
 		else
-			echo "${P};${P};${WALLTIME};${N}" >> $2
+			for ((rank=0;rank<$P;rank++))
+			do
+				if (( $rank == 0 ))
+				then
+					WALLTIME=$(grep "master" $1 | cut -d":" -f2)
+				else
+					WALLTIME=$(grep -w "processor ${rank}" $1 | cut -d":" -f2)
+				fi
+			echo "${rank};${P};${WALLTIME};${N}" >> $2
+			done
 		fi
 	else
-		for ((rank=0;rank<$P;rank++))
-		do
-			if (( $rank == 0 ))
-			then
-				WALLTIME=$(grep "walltime" $1 | grep "master" | cut -d":" -f2)
-			else
-				WALLTIME=$(grep "walltime" $1 | grep -w "processor ${rank}" | cut -d":" -f2)
-			fi
-			echo "${rank};${P};${WALLTIME};${N}" >> $2
-		done
+			ELAPSED_TIME=$(grep "elapsed" $1 | cut -d":" -f1)
+			echo "${rank};${P};${ELAPSED_TIME};${N}" >> $2
 	fi
 }
 
@@ -66,6 +73,7 @@ serial_sum_elab(){
 
 CURR_PROGRAM=$1
 SCALING_TEST=$2
+ELAPSED=$3
 
 if [[ $2 != "WEAK" ]]
 then
@@ -81,7 +89,7 @@ fi
 P_VALUES=$(grep P_VALUES_${SCALING_TEST} values.cfg | cut -d"=" -f2)
 N_VALUES=$(grep N_VALUES_${SCALING_TEST} values.cfg | cut -d"=" -f2)
 RESULT_FILE=$(echo $CURR_PROGRAM | cut -d"." -f1)_${SCALING_TEST}.res
-CSV_FILE=$(echo $CURR_PROGRAM | cut -d"." -f1)_${SCALING_TEST}.csv
+CSV_FILE=$(echo $CURR_PROGRAM | cut -d"." -f1)_${SCALING_TEST}_${ELAPSED}.csv
 
 #echo $CURR_PROGRAM
 
@@ -94,7 +102,7 @@ then
 			for p_val in $P_VALUES
 			do
 				run_parallel $p_val $n_val ${RESULT_FILE}_${p_val}_${n_val} $CURR_PROGRAM
-				result_files_to_csv ${RESULT_FILE}_${p_val}_${n_val} $CSV_FILE
+				result_files_to_csv ${RESULT_FILE}_${p_val}_${n_val} $CSV_FILE $ELAPSED
 				rm ${RESULT_FILE}_${p_val}_${n_val}
 			done
 		done
