@@ -1,0 +1,2 @@
+1) Why do we use the alloca function, if then the memory in the stack gets freed? Can't we just allocate the array as we would normally do?
+2) 

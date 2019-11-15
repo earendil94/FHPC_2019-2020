@@ -1,0 +1,15 @@
+In order to calculate the theoretical peak performance of our cpus we need to have this 3 pieces of information:
+1) Number of cores of the cpu
+2) Number of operation per cycle of the cores of the cpu 
+3) Average frequncy of work of each core
+
+Number 1 and 3 can be easily obtained by means of finding the property of the cpu directly in our system, but number 2 is less trivial and it's highly dependent on cpu architecture. It is anyway possible to find on the official page of the cpu model (mine is provided by Intel) the number of processes spawned per cycle by each core. Here is my calculation.
+
+AverageFrequency: 1,60GHz
+PeakFrequency(Turbo HyperBoost): 3,90GHz
+Core Number: 4
+Thread Number: 8
+
+Our SUSTAINED theoretical peak performance is therefore:
+
+	AF * CN * TN = 1,60GHz * 4 * 8FLOP/Cycle = 51,2 GFlop/s
