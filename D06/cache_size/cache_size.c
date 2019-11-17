@@ -1,8 +1,8 @@
 /* =============================================================================
- * This file is part of the exercises for the Lectures on 
+ * This file is part of the exercises for the Lectures on
  *   "Foundations of High Performance Computing"
- * given at 
- *   Master in HPC and 
+ * given at
+ *   Master in HPC and
  *   Master in Data Science and Scientific Computing
  * @ SISSA, ICTP and University of Trieste
  *
@@ -17,7 +17,7 @@
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
  *
- *     You should have received a copy of the GNU General Public License 
+ *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
@@ -43,44 +43,44 @@
 int main(int argc, char **argv)
 {
 
-  int                   PAPI_EventSet = PAPI_NULL;  
+  int                   PAPI_EventSet = PAPI_NULL;
   long long             values[NEVENTS];
   int                   retval, event_code;
   double               *array;
 
   int                   PAPI_myevents[NEVENTS] = { PAPI_TOT_CYC, PAPI_L1_DCM, PAPI_L2_DCM };
-  
+
   retval = PAPI_library_init(PAPI_VER_CURRENT);
   if (retval != PAPI_VER_CURRENT)
     printf("wrong PAPI initialization: %d instead of %d\n", retval, PAPI_VER_CURRENT);
 
-  retval = PAPI_create_eventset(&PAPI_EventSet);  PCHECK(retval);  
+  retval = PAPI_create_eventset(&PAPI_EventSet);  PCHECK(retval);
   for ( int i = 0; i < NEVENTS; i++)
     {
       retval = PAPI_query_event(PAPI_myevents[i]) ; PCHECK(retval);
       retval = PAPI_add_event(PAPI_EventSet, PAPI_myevents[i]);  PCHECK(retval);
     }
-  
+
   /* declare an array that is more than twice the L2 cache size */
   array     = (double*) malloc(L2WORDS2*sizeof(double));
 
   for ( int size = STEPSIZE; size < L2WORDS2; size += STEPSIZE)
     {
-      
+
       /* warm-up the cache by dragging the whole array through it */
       for ( int n = 0; n < L2WORDS2; n++) array[n] = (double)0.0;
-      
+
       /* now load the data in the highest cache level that fits */
       for ( int n = 0; n < size; n++) array[n] = (double)1.0;
-      
+
       retval = PAPI_start(PAPI_EventSet); PCHECK(retval);
 
       /* run the experiment */
       for ( int i = 0; i < NRUNS; i++)
 	for (int j = 0; j < size; j++ ) array[j] = 2.3*array[j]+1.2;
-      
+
       retval = PAPI_stop(PAPI_EventSet, values); PCHECK(retval);
-      
+
       printf("size: %d cycles: %lld cycles_per_loc: %9.5f L1miss: %lld L1miss_frac: %9.5f L2miss: %lld L2miss_frac: %9.5f\n",
 	     size,
 	     values[0], (double)values[0]/(NRUNS*size),
