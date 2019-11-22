@@ -73,6 +73,9 @@ int main( int argc, char **argv )
 	                           // those that succeed, print and modify the
 	                           // "order" value depends on which have been
 	                           // the previous ones, and on the relative delay.
+//This though has a problem: if the threads don't execute this in order then you have false from
+//the threads and they will never execute this line.
+//Then this is definitely by luck, and does not add anything wrt the default case.
 #pragma critical                   
     if ( order == my_thread_id )
       {

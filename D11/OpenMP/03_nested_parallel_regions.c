@@ -43,7 +43,8 @@
 //       OMP_MAX_ACTIVE_LEVELS=n
 //
 
-
+//This would work even if OMP_NESTED=false although it will just spawn one thread.
+//They are actually creating a parallel region with just one thread.
 int function( int, int );
 
 int main( int argc, char **argv )

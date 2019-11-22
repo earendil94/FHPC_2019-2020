@@ -36,7 +36,8 @@
 #include <math.h>
 #include <omp.h>
 
-
+//THREAD_CPUTIME yields the time used by the single thread (the workload of thread 0 basically)
+//PROCESS_CPUTIME yields the time used by ALL THE THREADS (CPU_TIME)
 #if !defined(USE_THREAD_BASED_TIMER)
 #define CPU_TIME (clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts ), (double)ts.tv_sec +	\
 		  (double)ts.tv_nsec * 1e-9)
@@ -70,6 +71,7 @@ int main( int argc, char **argv )
     int myid = omp_get_thread_num();
     double result;
     
+    //eevee work
     if( myid % 3 == 0)
       result = heavy_work_0( );
     else if ( myid % 3 == 1 )

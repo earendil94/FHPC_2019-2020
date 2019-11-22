@@ -109,7 +109,8 @@ int main( int argc, char **argv )
 
 #else
 
-  
+//Reduction operation is exactly the same as mpi. Compiler is actually allocating different 
+//memory locations for our sum variable.
 #pragma omp parallel for reduction(+:S)
     for ( int ii = 0; ii < N; ii++ )
       S += array[ii];

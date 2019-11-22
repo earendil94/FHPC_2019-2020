@@ -34,7 +34,7 @@
 #include <string.h>
 #include <omp.h>
 
-
+//#TODO: take a look at this code
 
 int function( int, int );
 
@@ -58,7 +58,7 @@ int main( int argc, char **argv )
   return 0;
 }
 
-
+//What the fuck is this recursion actually?
 int function( int id, int nested )
 {
   int this_level = omp_get_active_level();

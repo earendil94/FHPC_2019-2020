@@ -37,7 +37,7 @@
 int iters;
 #pragma omp threadprivate(iters)
 
-
+//omp parallel for is a work sharing construct. You want to split the workload in between processes
 
 
 int main( int argc, char **argv )
@@ -67,6 +67,7 @@ int main( int argc, char **argv )
 
     unsigned int S = 0;
   
+//
 #pragma  omp parallel for reduction(+:S)
     for ( int ii = 0; ii < N; ii++ )
       {

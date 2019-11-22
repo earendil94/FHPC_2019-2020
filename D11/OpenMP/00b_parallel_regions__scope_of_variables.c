@@ -46,7 +46,8 @@ int main( int argc, char **argv )
   int    i, N = N_default;
   double a[N], b[N], c[N];                                     // yes, they live in the stack
 
-  register unsigned long long base_of_stack asm("rbp");
+  //We are actually using line assembler asm to access the rbp
+  register unsigned long long base_of_stack asm("rbp"); 
   register unsigned long long top_of_stack asm("rsp");
 
   printf( "\nmain thread notice:\n"
@@ -69,7 +70,8 @@ int main( int argc, char **argv )
       b[i] = i+1;
     }
 
-  // just try who is i for each thread
+  // just try who is i for each thread 
+  //i is actually another private variable in this context, even though we have also defined it before
 #pragma omp parallel private(i)
   {
     int me = omp_get_thread_num();
@@ -82,6 +84,7 @@ int main( int argc, char **argv )
 	    me, &i, (void*)&i - (void*)my_stackbase, (void*)&i - (void*)base_of_stack, 
 	    (void*)my_stackbase, (void*)base_of_stack - (void*)my_stackbase);
   }
+
 
 #pragma omp parallel for shared(a,b,c,N) private(i)
   for( i = 0; i < N; i++ )

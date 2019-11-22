@@ -108,9 +108,9 @@ int main( int argc, char **argv )
 #else
 
   
-#pragma omp parallel for 
+#pragma omp parallel for //Sharing the workload in between our threads
     for ( int ii = 0; ii < N; ii++ )
-#pragma omp atomic
+#pragma omp atomic //This has the same behaviour of critical but for a single instruction
       S += array[ii];
 
 #endif

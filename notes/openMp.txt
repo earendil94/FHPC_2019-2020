@@ -1,0 +1,20 @@
+#pragam omp parallel
+{
+	foo(...)
+
+}
+
+This is actually calling a parallel region: ALL THE THREADS WILL EXECUTE FOO
+
+#ifdef _OPENMP
+
+This lets you write some part of the code to be executed only if you compile with -fopenmp
+
+stuff defined outside of the parallel region: shared
+stuff defined inside the parallel region: private
+
+#pragma master: makes the following block to be executed only by the master thread
+
+We talk about memory race when more threads are requesting to write on the same memory region.
+
+
