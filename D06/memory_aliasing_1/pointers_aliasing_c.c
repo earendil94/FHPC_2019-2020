@@ -19,7 +19,7 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-
+#define _XOPEN_SOURCE 700
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -68,16 +68,17 @@ int main ( void )
     }
 
 
+  //From the c standard library: this sorts an array!
   qsort ( timing, ITER, sizeof(TYPE), compare);
   top = ITER/10;
   if (top < 3)
     top = 3;
   
   for ( int cc = 0; cc < top; cc++ )
-    {
+  {
       time_avg  += timing[cc];
       sigma_avg += timing[cc]*timing[cc];
-    }
+  }
   time_avg /= top;
   sigma_avg /= top;
   

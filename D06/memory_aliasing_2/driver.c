@@ -59,6 +59,8 @@ int main ( int argc, char **argv )
 	N = atoi( *(argv+2) );
     }
 
+  //Defines the allignment requirement of our objects, i.e the number of bytes between objects of
+  //subsequent addresses.
   TYPE _Alignas(ALIGN) * restrict A;
   TYPE _Alignas(ALIGN) * restrict B;
   TYPE _Alignas(ALIGN) * restrict C;

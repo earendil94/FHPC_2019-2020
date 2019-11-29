@@ -49,6 +49,8 @@ TYPE * restrict A;
 TYPE * restrict B;
 TYPE * restrict C;
 
+//What is doing here is actually to allocate once all the memory for the three arrays
+//Ensuring that they are actually contiguous in memory.
 TYPE * allocate( int N )
 {
   TYPE *M;

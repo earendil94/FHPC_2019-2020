@@ -1,0 +1,2 @@
+1) Referring to pag 47 of the 03 slides
+A KB (kilobyte) is actually 10^3 bytes. The Lvl 1 cache has got 32 kb for instructions and 32 kb for data, so it has a total dimension of 64 kb.

@@ -43,7 +43,7 @@ void assign_float_array_noaliasing( int N, TYPE * restrict C, TYPE * restrict A,
   TYPE *C_=C, *A_=A, *B_=B;
   for ( int i = 0; i < N; i++ )
     {      
-      *(A_+à+) += *(C_++);
+      *(A_++) += *(C_++);
       *(B_++) += *(C_);
     }
   

@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
       /* run the experiment */
       for ( int i = 0; i < NRUNS; i++)
-	for (int j = 0; j < size; j++ ) array[j] = 2.3*array[j]+1.2;
+	      for (int j = 0; j < size; j++ ) array[j] = 2.3*array[j]+1.2;
 
       retval = PAPI_stop(PAPI_EventSet, values); PCHECK(retval);
 
