@@ -62,15 +62,10 @@ int mybsearch(int *data, int N, int Key)
      return -1;
  }
 
-<<<<<<< HEAD:D11/OpenMP/03b_nested_parallel_regions.c
-//What the fuck is this recursion actually?
-int function( int id, int nested )
-=======
 #define N_DEFAULT  (1024*1024*128)
 #define N_search_DEFAULT (N_DEFAULT / 10)
 
 int main(int argc, char **argv)
->>>>>>> 838a9b4757a3992e103539d051416c339dd740eb:Assignements/Assignment02/binary_search.c
 {
   int N, Nsearch, i;
   int *data, *search;
