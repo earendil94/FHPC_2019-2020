@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]
+then
+    echo "Usage: ./compile source n_threads"
+    echo "source: name of the source code to compile"
+    echo "n_threads: can be either one or more"
+    exit
+fi
+
+SOURCE=$1
+EXE=$( echo $SOURCE | cut -d. -f1)
+N_THREADS=$2
+
+
+#Serial
+if [ $N_THREADS -eq 1 ]
+then
+    gcc -o ${EXE}-SERIAL $SOURCE
+else
+    gcc -fopenmp -o ${EXE}-PARALLEL $SOURCE
+fi

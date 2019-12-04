@@ -1,0 +1,38 @@
+1) Add -lrt in the compile string to include clock_gettime error.
+2) How many cycles (different N)
+3) 
+
+- About parallel overhead: let's stick to the estimation, since this is what we would do if
+    the problem would really be complicated.
+- About maths of this: just stick to Monday
+- Phisically put data on the memory close to the thread: use static for some kind of scheduling
+
+- The parallel region is created on the order of 10 microseconds.
+- If you reopen the same parallel region (you can actually name them), it takes basically zero time.
+- If the father threads die all the children threads die as well.
+
+- Ask for the full node (aka all the cores of the node, aka 20)
+
+-In the beta:
+    SLERV
+    srun -N1 -nX --pty bash (this way we get an interactive session on a node. X is the number of cores u get)
+
+- Use the user perf mode
+
+
+
+PINNING
+
+- discover topology of the node:
+    numactl
+    cpuinfo
+    hwloc
+
+This is the path with the information: /sys/devices/system
+
+As few remote access as possible and as few conflicts as possible.
+SMT: one core running more than one thread (hyperthreading is its commercial implementation by intel)
+swthreads (software threads, our threads)
+If we have SMT, we can have more than one hardware threads per physical core.
+
+OMP_STACKSIZE: You can define the stack of the threads with this variable

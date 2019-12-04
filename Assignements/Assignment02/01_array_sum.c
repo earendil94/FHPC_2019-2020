@@ -160,7 +160,7 @@ int main( int argc, char **argv )
    */
 
 //Changed the output format of printf
-printf("Sum is %g\nwall-clock-time:%g\n\n"
+printf("Sum is %g\n%g:wall-clock-time\n\n"
        "<%g> sec of avg thread-time\n"
        "<%g> sec of min thread-time\n",
        S, tend - tstart, th_avg_time/nthreads, th_min_time );

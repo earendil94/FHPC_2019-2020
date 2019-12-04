@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#PBS -l nodes=1:ppn=20
+
+if [ $# -ne 1 ]
+then
+    echo "Usage: ./experiment program"
+    echo "EXE: name of the program"
+    exit
+fi
+
+#I'd like to have a list of numbers to use as a power
+EXE=$1
+SOURCE=${EXE}.c
+EXP="8"
+N_THREADS="1 2 3 4"
+LOOP=10
+
+n=0
+t=0
+
+#Let's have both version for the experiment
+./compile $SOURCE 1
+./compile $SOURCE 2
+
+FILENAME="${EXE}.csv"
+
+if [ -e $FILENAME ]
+then
+    rm $FILENAME
+fi
+
+echo "N;THREADS;TIME;LOOP" >> $FILENAME
+
+for n in $EXP
+do
+    for t in $N_THREADS
+    do
+        N=$(( 10 ** n ))
+        FILENAME_RUN=$( ./run $SOURCE $N $t $LOOP "elapsed" )
+        echo $FILENAME_RUN
+        awk 'BEGIN { FS =";"} {printf"%d;%d;%.5f;%d\n", $1, $2, $3, $4}' $FILENAME_RUN >> $FILENAME
+        rm $FILENAME_RUN
+    done
+done

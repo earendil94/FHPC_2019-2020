@@ -1,0 +1,49 @@
+#!/bin/bash
+
+if [ $# -ne 5 ]
+then
+    echo "Usage: ./run.sh source n_dimension n_threads loop_dimension time_flag\n"
+    echo "n_dimension: power of 10\n"
+    echo "n_threads: 1-20\n"
+    echo "loop_dimension suggested: 10\n"
+    echo "time_flag: [elapsed|wall-clock-time]\n"
+    exit
+fi
+
+SOURCE=$1
+EXE=$( echo $SOURCE | cut -d. -f1)
+N_DIMENSION=$2
+N_THREADS=$3
+LOOP=$4
+TIME_FLAG=$5
+
+i=0
+
+if [ $N_THREADS -eq 1 ]
+then
+    EXE=${EXE}-SERIAL
+else
+    EXE=${EXE}-PARALLEL  
+fi
+
+
+export OMP_NUM_THREADS=${N_THREADS}
+FILENAME_OUT="${EXE}-${N_DIMENSION}-${N_THREADS}.csv"
+
+if [ -e $FILENAME_OUT ]
+then
+    rm $FILENAME_OUT
+fi
+
+#File headers are N, THREADS,TIME, LoopNumber
+while [ $i -lt $LOOP ]
+do
+    { /usr/bin/time -f%e:elapsed ./${EXE} $N_DIMENSION ; } 1> tmp.txt 2> tmp.txt #; } | grep "$TIME_FLAG" | cut -d: -f1) 
+    EXE_TIME=$( cat tmp.txt | grep "$TIME_FLAG" | cut -d: -f1 )
+    echo "${N_DIMENSION};${N_THREADS};${EXE_TIME};${i}">> $FILENAME_OUT
+    i=$(( $i + 1 ))
+    rm tmp.txt
+done
+
+echo $FILENAME_OUT
+
