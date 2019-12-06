@@ -28,8 +28,8 @@ elif [ $COMPILER == "icc" ]
 then
     if [ $N_THREADS -eq 1 ]
     then
-        icc -std=c99 -o ${EXE}-SERIAL $SOURCE
+        icc -std=c99 -o ${EXE}-SERIAL $SOURCE -lrt
     else
-        icc -std=c99 -fopenmp -o ${EXE}-PARALLEL $SOURCE
+        icc -std=c99 -fopenmp -o ${EXE}-PARALLEL $SOURCE -lrt
     fi
 fi

@@ -15,15 +15,12 @@ str(df.06)
 #StrongScaling
 
 par(mfrow = c(1,2))
-data_to_graph = tibble(Thr=integer(), Speedup=numeric())
-data_to_graph
 
 strongScaling <- function(df){
   
   df.times <- df %>%
     group_by(N, THREADS) %>%
     summarise(time = mean(TIME))
-  
   
   K <- unique(df.times$N)
   TH <- unique(df.times$THREADS)
@@ -38,22 +35,16 @@ strongScaling <- function(df){
       filter(THREADS != 1) %>%
       pull(time)
     
-    #print(T1)
-    #print(TP)
-    
     sp <- T1/TP
     #Let's add speedup for 1 thread manually
     sp <- c(1,sp)
     
-    add_row(data_to_graph, Thr = TH, Speedup = sp  )
-    print(TH)
-    print(sp)
-    #print(data_to_graph)
-    print(data_to_graph)
-    ggplot(data_to_graph, aes(T,speedup))
+    data_to_graph <- tibble(Thr= TH, Speedup = sp)
+    print(ggplot(data_to_graph, aes(Thr,Speedup)) + geom_point())
   }
 }
 
+mf
 strongScaling(df.01)
 strongScaling(df.06)
 
