@@ -1,0 +1,11 @@
+Yet another I/O openmpi lesson.
+
+Lock mechanism: if a process is performing some stuff on a file the file is locked for other processes.
+2 separated calls: need to reset the pointer each and every time. Or open/close the file every time.
+
+The stride in mpi I/O is defined as the total amount of blocks in between one another.
+In Cozzini Fortran example the right amount is 8.
+
+Benchmarking I/O
+
+

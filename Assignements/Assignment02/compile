@@ -1,22 +1,35 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]
+if [ $# -ne 3 ]
 then
     echo "Usage: ./compile source n_threads"
     echo "source: name of the source code to compile"
     echo "n_threads: can be either one or more"
+    echo "compiler: gcc/icc"
     exit
 fi
 
 SOURCE=$1
 EXE=$( echo $SOURCE | cut -d. -f1)
 N_THREADS=$2
+COMPILER=$3
 
 
-#Serial
-if [ $N_THREADS -eq 1 ]
+#Serial/parallel
+if [ $COMPILER == "gcc" ]
 then
-    gcc -o ${EXE}-SERIAL $SOURCE
-else
-    gcc -fopenmp -o ${EXE}-PARALLEL $SOURCE
+    if [ $N_THREADS -eq 1 ]
+    then
+        gcc -std=c99 -o ${EXE}-SERIAL $SOURCE
+    else
+        gcc -std=c99 -fopenmp -o ${EXE}-PARALLEL $SOURCE
+    fi
+elif [ $COMPILER == "icc" ]
+then
+    if [ $N_THREADS -eq 1 ]
+    then
+        icc -std=c99 -o ${EXE}-SERIAL $SOURCE
+    else
+        icc -std=c99 -fopenmp -o ${EXE}-PARALLEL $SOURCE
+    fi
 fi

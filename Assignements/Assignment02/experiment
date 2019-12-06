@@ -2,17 +2,19 @@
 
 #PBS -l nodes=1:ppn=20
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-    echo "Usage: ./experiment program"
+    echo "Usage: ./experiment program compiler"
     echo "EXE: name of the program"
+    echo "COMPILER: gcc/icc"
     exit
 fi
 
 #I'd like to have a list of numbers to use as a power
 EXE=$1
+COMPILER=$2
 SOURCE=${EXE}.c
-EXP="8"
+EXP="7"
 N_THREADS="1 2 3 4"
 LOOP=10
 
@@ -20,8 +22,8 @@ n=0
 t=0
 
 #Let's have both version for the experiment
-./compile $SOURCE 1
-./compile $SOURCE 2
+./compile $SOURCE 1 $COMPILER
+./compile $SOURCE 2 $COMPILER
 
 FILENAME="${EXE}.csv"
 
