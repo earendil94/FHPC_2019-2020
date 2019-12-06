@@ -1,6 +1,21 @@
 #!/bin/bash
 
 #PBS -l nodes=1:ppn=20
+#PBS -N myjob
+#PBS -l walltime=00:30:00
+#PBS -o /home/fbrand/FHPC_2019-2020/Assignements/experiment.out
+#PBS -e /home/fbrand/FHPC_2019-2020/Assignements/experiment.err
+
+WHEREIAM=$(pwd)
+
+if [ $WHEREIAM == "/home/fbrand" ]
+then
+    cd "/home/fbrand/FHPC_2019-2020/Assignements"
+elif
+then
+    echo "Are you on Ulysses?"
+    exit
+fi
 
 if [ $# -ne 2 ]
 then

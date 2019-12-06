@@ -1,21 +1,24 @@
 #!/bin/bash
 
 #PBS -l nodes=1:ppn=20
-#PBS -N myjob
-#PBS -l walltime=00:10:00
+#PBS -N testJob
+#PBS -l walltime=00:00:10
+#PBS -o /home/fbrand/experiment.out
+#PBS -e /home/fbrand/experiment.err
+#PBS -
 
-WHEREIAM=$(pwd)
+# WHEREIAM=$(pwd)
 
-if [ $WHEREIAM == "/home/fbrand" ]
-then
-    cd "/home/fbrand/FHPC_2019-2020/Assignements"
-elif
-then
-    echo "Are you on Ulysses?"
-    exit
-fi
+# if [ $WHEREIAM == "/home/fbrand" ]
+# then
+#     cd "/home/fbrand/FHPC_2019-2020/Assignements"
+# elif
+# then
+#     echo "Are you on Ulysses?"
+#     exit
+# fi
 
-echo "HelloWorld!"
+echo "Dude, I am here: $WHEREIAM"
 
 
 
