@@ -102,6 +102,7 @@ int main( int argc, char **argv )
       nthreads = omp_get_num_threads();
       printf("omp summation with %d threads\n", nthreads );
     }
+    int me = omp_get_num_threads();
   #pragma omp critical
     PRINTF("thread %2d is running on core %2d\n", me, get_cpu_id() ); 
   }
