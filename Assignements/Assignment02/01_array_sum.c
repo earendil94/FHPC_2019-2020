@@ -40,6 +40,12 @@
 
 #define N_default 100
 
+#ifdef OUTPUT
+#define PRINTF(...) printf(__VA_ARGS__)
+#else
+#define PRINTF(...)
+#endif
+
 #if defined(_OPENMP)
 #define CPU_TIME (clock_gettime( CLOCK_REALTIME, &ts ), (double)ts.tv_sec + \
 		  (double)ts.tv_nsec * 1e-9)
@@ -170,5 +176,82 @@ printf("Sum is %g\n%g:wall-clock-time\n\n"
        S, tend - tstart, th_avg_time/nthreads, th_min_time );
   
   free( array );
+  return 0;
+}
+
+
+int get_cpu_id( void )
+{
+#if defined(_GNU_SOURCE)                              // GNU SOURCE ------------
+  
+  return  sched_getcpu( );
+
+#else
+
+#ifdef SYS_getcpu                                     //     direct sys call ---
+  
+  int cpuid;
+  if ( syscall( SYS_getcpu, &cpuid, NULL, NULL ) == -1 )
+    return -1;
+  else
+    return cpuid;
+  
+#else      
+
+  unsigned val;
+  if ( read_proc__self_stat( CPU_ID_ENTRY_IN_PROCSTAT, &val ) == -1 )
+    return -1;
+
+  return (int)val;
+
+#endif                                                // -----------------------
+#endif
+
+}
+
+
+
+int read_proc__self_stat( int field, int *ret_val )
+/*
+  Other interesting fields:
+
+  pid      : 0
+  father   : 1
+  utime    : 13
+  cutime   : 14
+  nthreads : 18
+  rss      : 22
+  cpuid    : 39
+
+  read man /proc page for fully detailed infos
+ */
+{
+  // not used, just mnemonic
+  // char *table[ 52 ] = { [0]="pid", [1]="father", [13]="utime", [14]="cutime", [18]="nthreads", [22]="rss", [38]="cpuid"};
+
+  *ret_val = 0;
+
+  FILE *file = fopen( "/proc/self/stat", "r" );
+  if (file == NULL )
+    return -1;
+
+  char   *line = NULL;
+  int     ret;
+  size_t  len;
+  ret = getline( &line, &len, file );
+  fclose(file);
+
+  if( ret == -1 )
+    return -1;
+
+  char *savetoken = line;
+  char *token = strtok_r( line, " ", &savetoken);
+  --field;
+  do { token = strtok_r( NULL, " ", &savetoken); field--; } while( field );
+
+  *ret_val = atoi(token);
+
+  free(line);
+
   return 0;
 }
