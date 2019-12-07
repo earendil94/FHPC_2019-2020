@@ -15,8 +15,7 @@ then
     cd "/home/fbrand/FHPC_2019-2020/Assignements"
     module load intel
     ./experiment $EXE $COMPILER
-elif
-then
+else
     echo "Are you on Ulysses?"
     exit
 fi

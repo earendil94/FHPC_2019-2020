@@ -30,6 +30,7 @@
 #     define _XOPEN_SOURCE 700
 #  endif
 #endif
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -90,13 +91,16 @@ int main( int argc, char **argv )
 #else
 #pragma omp parallel
   {
-#pragma omp master
+  #pragma omp master
     {
       nthreads = omp_get_num_threads();
       printf("omp summation with %d threads\n", nthreads );
     }
+  #pragma omp critical
+    PRINTF("thread %2d is running on core %2d\n", me, get_cpu_id() ); 
   }
 #endif
+
 
   // initialize the array
   srand48( time(NULL) );
