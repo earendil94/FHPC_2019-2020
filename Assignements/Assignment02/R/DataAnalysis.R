@@ -18,6 +18,7 @@ setwd("C:/BashShared/FHPC_2019-2020/Assignements/Assignment02/R")
 #df.06 <- read.csv("../06_touch_by_all.csv", sep = ";")
 df.01 <- read.csv("../../ulyssesResults/01_array_sum.csv", sep = ";")
 df.06 <- read.csv("../../ulyssesResults/06_touch_by_all.csv", sep = ";")
+df.preSum <- read.csv("../../ulyssesResults/prefixSum.csv", sep = ";")
 
 #Filtering my stuff
 
@@ -63,7 +64,7 @@ strongScaling <- function(df){
 
 strongScaling(df.01) #Right now this is less than one
 strongScaling(df.06) #Stops scaling (even though slowly) from 
-
+strongScaling(df.preSum)
 
 
 

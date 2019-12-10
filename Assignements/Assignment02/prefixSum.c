@@ -30,11 +30,12 @@
 #define PRINTF(...)
 #endif
 
-#define DEFAULT 8
+#define DEFAULT 10
 
 int main(int argc, char **argv){
 
     int n = DEFAULT;
+    int nthreads = 1;
     double *arr;
 
     //If we actually pass argument take the first argument as N
@@ -42,21 +43,21 @@ int main(int argc, char **argv){
         n = atoi(*(argv+1));
 
       // just give notice of what will happen and get the number of threads used
-    #ifndef _OPENMP
-      printf("serial prefix sum\n");
-    #else
-    #pragma omp parallel
-    {
-    #pragma omp master
-        {
-        nthreads = omp_get_num_threads();
-        printf("omp prefix sum with %d threads\n", nthreads );
-        }
-        int me = omp_get_num_threads();
-    #pragma omp critical
-        PRINTF("thread %2d is running on core %2d\n", me, get_cpu_id() ); 
-    }
-    #endif
+    // #ifndef _OPENMP
+    //   printf("serial prefix sum\n");
+    // #else
+    // #pragma omp parallel
+    // {
+    // #pragma omp master
+    //     {
+    //       nthreads = omp_get_num_threads();
+    //       printf("omp prefix sum with %d threads\n", nthreads );
+    //     }
+    //     int me = omp_get_num_threads();
+    //     #pragma omp critical
+    //       PRINTF("thread %2d is running on core %2d\n", me, get_cpu_id() ); 
+    // }
+    // #endif
 
     if( (arr = (double *) malloc(n*sizeof(double))) == NULL ){
         printf("Malloc failed, exiting program\n");
@@ -67,12 +68,11 @@ int main(int argc, char **argv){
         arr[k] = (double)k;
     }
 
-    // printf("Arr:\t");
-    // for(size_t k = 0; k < n; k++){
-    //      printf("%f\t",arr[k]);
-    // }
-    // printf("\n\n");
-   
+    printf("Arr:\t");
+    for(size_t k = 0; k < n; k++){
+         printf("%f\t",arr[k]);
+    }
+    printf("\n\n");
 
     //True part of the algorithm
     #if !defined(_OPENMP)
@@ -83,7 +83,6 @@ int main(int argc, char **argv){
         //Let's start assuming n/p is a perfect integer division
         double *sum;
         int p;
-        
         // if( (sum = malloc(sizeof(double)*p)) == NULL )
         // {
         //     printf("Malloc failed, exiting program\n");
@@ -92,73 +91,45 @@ int main(int argc, char **argv){
 
         #pragma omp parallel
         {
-            #pragma omp master
-                p = omp_get_num_threads();
-           
-            int t = omp_get_thread_num();
-            int partial_dim = n/p; 
+            #pragma omp single
+            {
+              p = omp_get_num_threads();
+              sum = malloc(sizeof(double)*(p+1));
+            }
 
-            #pragma omp master
-                sum = malloc(sizeof(double)*p);
+            sum[0] = 0;
+            int t = omp_get_thread_num();         
+            
+            double tsum = 0;
 
+            #pragma omp for schedule(static)
+            for(int i = 0; i < n; i++)
+            {
+                tsum += arr[i];
+                arr[i] = tsum;
+            }
 
-            sum[t] = arr[partial_dim*t];
-            for(size_t i = 1 + partial_dim*t; i < partial_dim*(t+1); i++)
-                sum[t] += arr[i];
-        }
+            sum[t+1] = tsum;
 
-        for(size_t k = 1; k < p; k++)
-            sum[k] += sum[k-1];
+            #pragma omp barrier
 
-        #pragma omp parallel
-        {   
-            int p = omp_get_num_threads();
-            int t = omp_get_thread_num();
-            int partial_dim = n/p; 
-            // if( t > 0)
-            //     arr[partial_dim*(t)] = arr[partial_dim * (t)] + sum[t-1];
+            int offset;
 
-            if( t > 0)
-                arr[partial_dim * t] += sum[t-1];
+            for(int i = 0; i < t+1; i++)
+              offset += sum[i];
 
-            for( size_t i = 1 + partial_dim *t; i < partial_dim * (t+1); i++)
-                arr[i] = arr[i] + arr[i-1];
+            #pragma omp for schedule(static)
+            for( int i = 0; i < n; i++)
+                arr[i] += offset;
         } 
 
     #endif
-
-
-    //#TODO:maybe complete the log(p) version of the algortihm, maybe not
-    //Up-Sweep
-    // int height = ceil(log2(n));
-
-    // for( int d = 0; d < height; d++)
-    // {
-    //     int step = (int) pow(2,d+1);
-    //     #pragma omp parallel for
-    //         for(int i = 0; i < n ; i += step)
-    //             arr[i + step - 1] = arr[i + step - 1] + arr[i + step/2 - 1];
-    // }
-
-    // //Down-sweep
-    // arr[n-1] = 0;
-
-    // for( int d = height - 1; d >= 0; d--)
-    // {
-    //     int step = (int) pow(2,d+1);
-    //     #pragma omp parallel for
-    //         for(int i = 0; i < n; i += step)
-    //         {
-    //             double t = arr[i + step/2 - 1];
-    //             arr[i + step/2 - 1] = arr[i + step - 1];
-    //             arr[i + step - 1] = arr[i + step - 1] + t;
-    //         }
-    // }
     
-    // printf("\nprefixSumArr:\t");
-    // for(size_t k = 0; k < n; ++k){
-    //     printf("%f\t",arr[k]);
-    // }
+    printf("Arr:\t");
+    for(size_t k = 0; k < n; k++){
+         printf("%f\t",arr[k]);
+    }
+    printf("\n\n");
 
 }
 
