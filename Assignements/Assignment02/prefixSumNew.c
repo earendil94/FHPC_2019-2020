@@ -119,8 +119,13 @@ int main(int argc, char **argv){
               offset += sum[i];
 
             #pragma omp for schedule(static)
-            for( int i = 0; i < n; i++)
+            for( int register i = 0; i < n; i+= 4)
+            {
                 arr[i] += offset;
+                arr[i+1] += offset;
+                arr[i+2] += offset;
+                arr[i+3] += offset;
+            }
         } 
 
     #endif
