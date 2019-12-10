@@ -64,15 +64,9 @@ int main(int argc, char **argv){
         exit(-1);
     }
 
-    for(int k = 0; k < n; k++){
-        arr[k] = (double)k;
-    }
 
-    // printf("Arr:\t");
-    // for(size_t k = 0; k < n; k++){
-    //      printf("%f\t",arr[k]);
-    // }
-    // printf("\n\n");
+
+
 
     //True part of the algorithm
     #if !defined(_OPENMP)
@@ -91,6 +85,22 @@ int main(int argc, char **argv){
 
         #pragma omp parallel
         {
+
+            //Touch by all
+            #pragma omp parallel for
+            for(int k = 0; k < n; k++){
+               arr[k] = (double)k;
+            }
+
+            // #pragma omp single 
+            // {
+            //     printf("Arr:\t");
+            //     for(size_t k = 0; k < n; k++){
+            //       printf("%f\t",arr[k]);
+            //     }
+            //     printf("\n\n");
+            // }
+
             #pragma omp single
             {
               p = omp_get_num_threads();
@@ -119,12 +129,9 @@ int main(int argc, char **argv){
               offset += sum[i];
 
             #pragma omp for schedule(static)
-            for( int register i = 0; i < n; i+= 4)
+            for( int register i = 0; i < n; i++)
             {
                 arr[i] += offset;
-                arr[i+1] += offset;
-                arr[i+2] += offset;
-                arr[i+3] += offset;
             }
         } 
 
