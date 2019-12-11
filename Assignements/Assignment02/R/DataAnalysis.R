@@ -17,6 +17,7 @@ setwd("C:/BashShared/FHPC_2019-2020/Assignements/Assignment02/R")
 df.01 <- read.csv("../../ulyssesResults/01_array_sum.csv", sep = ";")
 df.06 <- read.csv("../../ulyssesResults/06_touch_by_all.csv", sep = ";")
 df.preSum <- read.csv("../../ulyssesResults/prefixSum.csv", sep = ";")
+df.preSumNew <- read.csv("../../ulyssesResults/prefixSumNew.csv", sep = ";")
 
 #Filtering my stuff
 
@@ -95,6 +96,7 @@ parallelOverhead(df.01)
 parallelOverhead(df.preSum)
 
 strongScaling(df.preSum)
+strongScaling(df.preSumNew)
 
 
 
@@ -111,6 +113,12 @@ df.times.06 <- df.06 %>%
   group_by(N, THREADS) %>%
   summarise(time = mean(TIME))
 
+df.times.preSum <- df.preSum %>%
+  group_by(N, THREADS) %>%
+  summarise(time = mean(TIME))
+
+
+print(df.times.preSum)
 print(df.times.06, n=120)
 
 

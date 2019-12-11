@@ -11,6 +11,7 @@
 #include <omp.h>
 
 
+
 #if defined(_OPENMP)
 #define CPU_TIME (clock_gettime( CLOCK_REALTIME, &ts ), (double)ts.tv_sec + \
 		  (double)ts.tv_nsec * 1e-9)
@@ -64,18 +65,17 @@ int main(int argc, char **argv){
         exit(-1);
     }
 
-    for(int k = 0; k < n; k++){
-        arr[k] = (double)k;
-    }
 
-    // printf("Arr:\t");
-    // for(size_t k = 0; k < n; k++){
-    //      printf("%f\t",arr[k]);
-    // }
-    // printf("\n\n");
+
+
 
     //True part of the algorithm
     #if !defined(_OPENMP)
+
+        for(int k = 0; k < n; k++)
+              arr[k] = (double)k;
+
+
         for(size_t i = 1; i < n; ++i)
             arr[i] = arr[i] + arr[i-1];
     #else
@@ -91,6 +91,21 @@ int main(int argc, char **argv){
 
         #pragma omp parallel
         {
+
+            //Touch by all
+            #pragma omp parallel for schedule(dinamic)
+              for(int register k = 0; k < n; k++)
+                arr[k] = (double)k;
+
+            // #pragma omp single 
+            // {
+            //     printf("Arr:\t");
+            //     for(size_t k = 0; k < n; k++){
+            //       printf("%f\t",arr[k]);
+            //     }
+            //     printf("\n\n");
+            // }
+
             #pragma omp single
             {
               p = omp_get_num_threads();
@@ -119,8 +134,10 @@ int main(int argc, char **argv){
               offset += sum[i];
 
             #pragma omp for schedule(static)
-            for( int i = 0; i < n; i++)
+            for( int register i = 0; i < n; i++)
+            {
                 arr[i] += offset;
+            }
         } 
 
     #endif
