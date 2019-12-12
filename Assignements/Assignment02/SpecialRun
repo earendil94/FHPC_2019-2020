@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#PBS -l nodes=1:ppn=20
+#PBS -l walltime=00:05:00
+#PBS -N CarusoGOAT
+#PBS -o /home/fbrand/FHPC_2019-2020/Assignements/specialRun.out
+#PBS -e /home/fbrand/FHPC_2019-2020/Assignements/specialErr.err
+
+export OMP_NUM_THREADS=20
+export OMP_PLACES="cores"
+export OMP_PROC_BIND="close"
+N=1000000000
+FILENAME_OUT=06_touch_by_all_NEW_${N}.csv
+
+if [ -e $FILENAME_OUT ]
+then
+    rm $FILENAME_OUT
+fi
+
+module load gcc
+
+cd /home/fbrand/FHPC_2019-2020/Assignements/Assignment02 
+
+gcc -o 06_touch_by_all_NEW -fopenmp -std=c99 06_touch_by_all_NEW.c
+
+{ /usr/bin/time -f%e:elapsed ./06_touch_by_all_NEW $N ; } 1> tmp.txt 2> tmp.txt
+grep "elapsed" tmp.txt | cut -d":" -f1 > 06_touch_by_all_NEW_${N}.csv
+
+#rm tmp.txt

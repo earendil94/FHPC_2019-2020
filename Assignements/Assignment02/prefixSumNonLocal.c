@@ -10,7 +10,6 @@
 #include <time.h>
 #include <omp.h>
 
-
 #define DEFAULT 10
 
 int main(int argc, char **argv){
@@ -18,13 +17,18 @@ int main(int argc, char **argv){
     int n = DEFAULT;
     int nthreads = 1;
     double *arr;
+    double *tmp_arr;
 
     //If we actually pass argument take the first argument as N
     if(argc > 1)
         n = atoi(*(argv+1));
 
-
     if( (arr = (double *) malloc(n*sizeof(double))) == NULL ){
+        printf("Malloc failed, exiting program\n");
+        exit(-1);
+    }
+
+    if( (tmp_arr = (double *) malloc(n*sizeof(double))) == NULL ){
         printf("Malloc failed, exiting program\n");
         exit(-1);
     }
@@ -57,7 +61,7 @@ int main(int argc, char **argv){
         {
 
             //Touch by all
-            #pragma omp for 
+            #pragma omp for
               for(int register k = 0; k < n; k++)
                 arr[k] = (double)k;
 
@@ -85,7 +89,7 @@ int main(int argc, char **argv){
             for(int i = 0; i < n; i++)
             {
                 tsum += arr[i];
-                arr[i] = tsum;
+                tmp_arr[i] = tsum;
             }
 
             sum[t+1] = tsum;
@@ -100,7 +104,7 @@ int main(int argc, char **argv){
             #pragma omp for schedule(static)
             for( int register i = 0; i < n; i++)
             {
-                arr[i] += offset;
+                arr[i] = tmp_arr[i] + offset;
             }
         } 
 
@@ -113,4 +117,6 @@ int main(int argc, char **argv){
     // printf("\n\n");
 
 }
+
+
 

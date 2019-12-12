@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#PBS -l nodes=1:ppn=20
+#PBS -l walltime=00:05:00
+#PBS -N perfRun
+#PBS -o /home/fbrand/FHPC_2019-2020/Assignements/perfRun.out
+#PBS -e /home/fbrand/FHPC_2019-2020/Assignements/perfErr.err
+
+
+PROGRAM_1=01_array_sum
+PROGRAM_2=06_touch_by_all
+N=1000000000
+
+module load gcc
+cd /home/fbrand/FHPC_2019-2020/Assignements/Assignment02 
+#We fix the number of threads to 20 and we use gcc as our default compiler
+./compile ${PROGRAM_1}.c 20 gcc
+./compile ${PROGRAM_2}.c 20 gcc
+
+perf stat -o perf_${PROGRAM_1}.txt -x":" -r10./${PROGRAM_1}-PARALLEL $N 
+perf stat -o perf_${PROGRAM_2}.txt -x":" -r10 ./${PROGRAM_2}-PARALLEL $N 
+
+CYCLES=$(grep "cycles" perf_${PROGRAM_1}.txt | cut -d";" -f1 )
+STD_CYCLES=$(grep "cycles" perf_${PROGRAM_1}.txt | cut -d";" -f3 )
+INSTRUCTIONS=$(grep "instructions" perf_${PROGRAM_1}.txt | cut -d";" -f1 )
+STD_INSTRUCTIONS=$(grep "instructions" perf_${PROGRAM_1}.txt | cut -d";" -f3 )
+
+echo "${CYCLES};${STD_CYCLES};${INSTRUCTIONS};${STD_INSTRUCTIONS}" > perf_${PROGRAM_1}.csv
