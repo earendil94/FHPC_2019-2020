@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#PBS -l nodes=1:ppn=20
+#PBS -N wrapper
+#PBS -l walltime=00:30:00
+#PBS -o /home/fbrand/FHPC_2019-2020/Assignements/experiment.out
+#PBS -e /home/fbrand/FHPC_2019-2020/Assignements/experiment.err
+
+WHOAMI=$(whoami)
+EXE=01_array_sum 
+COMPILER=gcc
+
+cd "/home/${WHOAMI}/Brand.Francesco/scripts"
+module load gcc 
+./experiment $EXE $COMPILER

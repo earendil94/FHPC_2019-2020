@@ -10,6 +10,7 @@ library(gridExtra)
 library(ggplot2)
 library(dplyr)
 library(ggpubr)
+library(tidyr)
 
 #Set WD
 setwd("C:/BashShared/FHPC_2019-2020/Assignements/Assignment02/R")
@@ -20,7 +21,7 @@ df.06 <- read.csv("../../ulyssesResults/06_touch_by_all.csv", sep = ";")
 df.preSum <- read.csv("../../ulyssesResults/prefixSum.csv", sep = ";")
 df.preSumNew <- read.csv("../../ulyssesResults/prefixSumNew.csv", sep = ";")
 df.preSumNewNonLocal <- read.csv("../../ulyssesResults/prefixSumNonLocal.csv", sep = ";")
-
+df.06New <- read.csv("../../ulyssesResults/06_touch_by_all_NEW.csv", sep = ";")
 #Filtering my stuff
 
 df.01_8 <- df.01 %>%
@@ -34,6 +35,9 @@ df.01_9 <- df.01 %>%
 
 df.06_9 <- df.06 %>%
   filter(N==1000000000)
+
+df.06_9_NEW <- df.06New %>%
+  filter(N == 1000000000)
 
 #Some useful functions
 
@@ -148,50 +152,91 @@ df.preSumNewNonLocal.sp <- df.preSumNewNonLocal.sp %>%
 
 df.preSum_sp <- bind_rows(df.preSum.sp,df.preSumNew.sp, df.preSumNewNonLocal.sp )
 
+png(file="C:\\Users\\franc\\Documents\\TriesteUni\\HPC\\PrefixSumSpeedup.png",
+    width = 600, height=350)
 ggplot(df.preSum_sp, aes(x=Threads,y=Speedup,color=label)) +
-  geom_line(size=1.5)
+  geom_line(size=1.2) +
+  ggtitle("Prefix Sum") +
+  theme(plot.title = element_text(hjust = 0.5))
+dev.off()
 
 
+####PERF#####
+
+df.perf_01 <- read.csv("../perf_06_touch_by_all.csv ", sep= ";")
+df.perf_06 <- read.csv("../perf_01_array_sum.csv  ", sep= ";")
+
+df.perf_01
+df.perf_06
+
+df.perf_01 <- df.perf_01 %>%
+  filter(event == "instructions-per-cycle" | event == "LLC-cache-miss-rate" | event == "L1-cache-miss-rate")
+
+df.perf_06 <- df.perf_06 %>%
+  filter(event == "instructions-per-cycle" | event == "LLC-cache-miss-rate" | event == "L1-cache-miss-rate")
+
+df.perf_01 <- df.perf_01 %>%
+  mutate(label="touch-first")
+
+df.perf_06 <- df.perf_06 %>%
+  mutate(label="touch-by-all")
+
+df.perf <- bind_rows(df.perf_01, df.perf_06)
+df.perf <- df.perf %>%
+  mutate(Number=as.numeric(Number), err = as.numeric(err))
+df.perf
+
+ggplot(data = df.perf, aes(x=event, y = Number,
+                           ymin = Number - err*Number, ymax = Number + err*Number)) +
+  geom_pointrange() +
+  facet_grid(cols = vars(label))
 
 
-strongScaling(df.01)
-strongScaling(df.06)  
-strongScaling(df.preSum)
-
-parallelOverhead(df.01)
-parallelOverhead(df.preSum)
-
-strongScaling(df.preSum)
-strongScaling(df.preSumNew)
+summary(df.perf)
 
 
+###### NUMA OMp #######
 
+strongScalingNUMA <- function(df){
+  df.times <- mean_std_df(df)
+  TH <- 10:20
+    
+  T1 <- df.times %>%
+    filter(THREADS == 1) %>%
+    pull(time)
+    
+  TP <- df.times %>%
+    filter(THREADS > 9) %>%
+    pull(time)
+    
+  sp <- T1/TP
+  p <- 10:20
+  e <- (1/sp - 1/p)/(1-1/p)
+    
+  data_to_graph <- tibble(Threads = TH, Speedup = sp, e = e)
+}
 
+df.06.9 <- strongScalingNUMA(df.06_9)
+df.06.9.New <- strongScalingNUMA(df.06_9_NEW)
 
+df.06.9
+df.06.9.New
 
-?arrangeGrob
+df.06.9 <- df.06.9 %>%
+  mutate(label = "original")
 
-df.times <- df.01 %>%
-  group_by(N, THREADS) %>%
-  summarise(time = mean(TIME))
+df.06.9.New <- df.06.9.New %>%
+  mutate(label = "modified")
 
-df.times.06 <- df.06 %>%
-  group_by(N, THREADS) %>%
-  summarise(time = mean(TIME))
+df.06.NUMA.sp <- bind_rows(df.06.9, df.06.9.New)
 
-df.times.preSum <- df.preSum %>%
-  group_by(N, THREADS) %>%
-  summarise(time = mean(TIME))
+df_6_NUMA_plot <- ggplot(df.06.NUMA.sp, aes(x=Threads,y=Speedup,color=label)) + 
+  geom_line(size=1.3) +
+  ggtitle("N = 10^9") +
+  theme(plot.title = element_text(hjust = 0.5))
 
-
-print(df.times.preSum)
-print(df.times.06, n=120)
-
-
-strongScaling(df.06)
-
-
-
-
-
+png(file="C:\\Users\\franc\\Documents\\TriesteUni\\HPC\\Speedup_NUMA.png",
+    width = 600, height=350)
+df_6_NUMA_plot
+dev.off()
 

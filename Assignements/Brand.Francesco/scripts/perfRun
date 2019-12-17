@@ -2,7 +2,7 @@
 
 #PBS -l nodes=1:ppn=20
 #PBS -l walltime=00:15:00
-#PBS -N CarusoGOAT
+#PBS -N perfRun
 #PBS -o /home/fbrand/FHPC_2019-2020/Assignements/perfRun.out
 #PBS -e /home/fbrand/FHPC_2019-2020/Assignements/perfErr.err
 
@@ -12,7 +12,9 @@ PROGRAM_2=06_touch_by_all
 N=1000000000
 
 module load gcc
+
 cd /home/fbrand/FHPC_2019-2020/Assignements/Assignment02 
+
 #We fix the number of threads to 20 and we use gcc as our default compiler
 ./compile ${PROGRAM_1}.c 20 gcc
 ./compile ${PROGRAM_2}.c 20 gcc

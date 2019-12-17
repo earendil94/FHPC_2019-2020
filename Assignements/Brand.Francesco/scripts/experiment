@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]
+then
+    echo "Usage: ./experiment program compiler"
+    echo "EXE: name of the program"
+    echo "COMPILER: gcc/icc"
+    exit
+fi
+
+#I'd like to have a list of numbers to use as a power
+EXE=$1
+COMPILER=$2
+SOURCE=${EXE}.c
+EXP="8 9"
+N_THREADS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20"
+LOOP=10
+
+n=0
+t=0
+
+#Let's have both version for the experiment
+./compile $SOURCE 1 $COMPILER
+./compile $SOURCE 2 $COMPILER
+
+FILENAME="${EXE}.csv"
+
+if [ -e $FILENAME ]
+then
+    rm $FILENAME
+fi
+
+echo "N;THREADS;TIME;LOOP" >> $FILENAME
+
+for n in $EXP
+do
+    for t in $N_THREADS
+    do
+        N=$(( 10 ** n ))
+        FILENAME_RUN=$( ./run $SOURCE $N $t $LOOP "elapsed" )
+        echo $FILENAME_RUN
+        awk 'BEGIN { FS =";"} {printf"%d;%d;%.5f;%d\n", $1, $2, $3, $4}' $FILENAME_RUN >> $FILENAME
+        rm $FILENAME_RUN
+    done
+done

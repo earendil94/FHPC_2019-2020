@@ -17,6 +17,8 @@ N_THREADS=$3
 LOOP=$4
 TIME_FLAG=$5
 
+cd "../source"
+
 i=0
 
 if [ $N_THREADS -eq 1 ]

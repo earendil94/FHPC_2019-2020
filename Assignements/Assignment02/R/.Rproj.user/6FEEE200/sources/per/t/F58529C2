@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576274642864.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3740338259",
+    "id" : "F58529C2",
+    "lastKnownWriteTime" : 1576347851,
+    "last_content_update" : 1576347851237,
+    "path" : "C:/BashShared/FHPC_2019-2020/Assignements/Assignment02/R/DataAnalysis.R",
+    "project_path" : "DataAnalysis.R",
+    "properties" : {
+        "cursorPosition" : "181,22",
+        "scrollLine" : "173"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
