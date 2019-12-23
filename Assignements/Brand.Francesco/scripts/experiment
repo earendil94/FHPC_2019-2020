@@ -23,6 +23,8 @@ t=0
 ./compile $SOURCE 1 $COMPILER
 ./compile $SOURCE 2 $COMPILER
 
+cd "../source"
+
 FILENAME="${EXE}.csv"
 
 if [ -e $FILENAME ]
@@ -37,7 +39,7 @@ do
     for t in $N_THREADS
     do
         N=$(( 10 ** n ))
-        FILENAME_RUN=$( ./run $SOURCE $N $t $LOOP "elapsed" )
+        FILENAME_RUN=$( ../scripts/run $SOURCE $N $t $LOOP "elapsed" )
         echo $FILENAME_RUN
         awk 'BEGIN { FS =";"} {printf"%d;%d;%.5f;%d\n", $1, $2, $3, $4}' $FILENAME_RUN >> $FILENAME
         rm $FILENAME_RUN
