@@ -17,9 +17,9 @@ typedef struct {
 
 void particleInitialize(particle *par, int n, double m);
 void readParticles(particle *par, int n);
-//void updateParticlesForce(particle *par, int n, double m);
 double updateParticlesForceAndTime(particle *par, int n, double m);
 void updateParticles(particle *par, int n, double m, double t);
+void printParticle(particle *pars, FILE *fp, int n);
 int sgn(double a, double b);
 
 int main(int argc, char **argv){
@@ -28,8 +28,12 @@ int main(int argc, char **argv){
     int n_it = 0;
     double t, m;
 
+    FILE *ofp;
+    char outputFileName[] = "particleOutput";
+    ofp = fopen(outputFileName, "w");
+
     if(argc < 2){
-        printf("Using default number of particles\n");
+        printf("Using default number of particles\n\n");
         N = default;
     } else
     {
@@ -43,7 +47,7 @@ int main(int argc, char **argv){
     particle *pars;
 
     if( (pars = malloc(N * sizeof(particle))) == NULL ){
-        printf("Houston, we can't create this many particles!");
+        printf("Houston, we can't create this many particles!\n");
         exit(-1);
     }
 
@@ -52,7 +56,7 @@ int main(int argc, char **argv){
     //readParticles(pars, N);
 
     do{
-        printf("%d-st iteration:\n\n", n_it);
+        printf("Computing %d-st iteration:\n\n", n_it);
 
         t = updateParticlesForceAndTime(pars, N, m);
 
@@ -63,10 +67,44 @@ int main(int argc, char **argv){
 
     }while( n_it < 2);
 
+    printParticle(pars, ofp, N);
 
 }
 
+//New Version of this below
+// void particleInitialize(particle *par, int n, double m){
+
+//     srand(seed);
+
+//     for( int register i = 0; i < n; i++){
+      
+//         //Random position values in [-1;1]
+//         par[i].p[0] = drand48()*2 - 1;
+//         par[i].p[1] = drand48()*2 - 1;
+//         par[i].p[2] = drand48()*2 - 1;
+
+//         //Random velocity values (we need to refine the drand48 random generation here)
+//         par[i].v[0] = (drand48()*2 - 1)/20;
+//         par[i].v[1] = (drand48()*2 - 1)/20;
+//         par[i].v[2] = (drand48()*2 - 1)/20;
+
+//         par[i].F[0] = 0;
+//         par[i].F[1] = 0;
+//         par[i].F[2] = 0;
+
+//         par[i].E = 1./2. * m * par[i].v[0] * par[i].v[0] + par[i].v[1] * par[i].v[1] + par[i].v[2] * par[i].v[2];
+//     }
+
+// }
+
+//It makes sense even in a parallel point of view, to initialize every particle in a process
+//and read the other one from a file
 void particleInitialize(particle *par, int n, double m){
+
+    //Output file initialization
+    FILE *ofp;
+    char outputFileName[] = "particleInitialize";
+    ofp = fopen(outputFileName, "w");
 
     srand(seed);
 
@@ -87,8 +125,21 @@ void particleInitialize(particle *par, int n, double m){
         par[i].F[2] = 0;
 
         par[i].E = 1./2. * m * par[i].v[0] * par[i].v[0] + par[i].v[1] * par[i].v[1] + par[i].v[2] * par[i].v[2];
+
+        fprintf(ofp, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", 
+            par[i].p[0], par[i].p[1],par[i].p[2],par[i].v[0],par[i].v[1],par[i].v[2],par[i].F[0],par[i].F[1],par[i].F[2],par[i].E);
     }
 
+}
+
+void printParticle(particle * pars, FILE *fp, int n){
+
+    //The output format for a given particle will be naive at first:
+    //px,py,pz,vx,vy,vz,fx,fy,fz,e
+    for(int register i = 0; i < n; i++){
+        fprintf(fp, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", 
+            pars[i].p[0], pars[i].p[1],pars[i].p[2],pars[i].v[0],pars[i].v[1],pars[i].v[2],pars[i].F[0],pars[i].F[1],pars[i].F[2],pars[i].E);
+    }
 }
 
 void readParticles(particle *par, int n){
@@ -106,23 +157,10 @@ void readParticles(particle *par, int n){
 //Seems reasonable, otherwise we would be implicitly defining an order of variable,
 //Which is something that does not actually exist
 
-//New version of this function is below: we are also updating times
-// void updateParticlesForce(particle *par, int n, double m){
-
-//     //Still unsure of which is the best way to exclude the i-th component
-//     for(int register i = 0; i < n; i++){     
-//         for( int register k = 0; k < n; k++){
-
-//             if( k != i){
-//                 par[i].F[0] += G*m*m*sgn(par[i].p[0], par[k].p[0]) / ( (par[i].p[0] - par[k].p[0]) * (par[i].p[0] - par[k].p[0]) );
-//                 par[i].F[1] += G*m*m*sgn(par[i].p[1], par[k].p[1]) / ( (par[i].p[1] - par[k].p[1]) * (par[i].p[1] - par[k].p[1]) );
-//                 par[i].F[2] += G*m*m*sgn(par[i].p[2], par[k].p[2]) / ( (par[i].p[2] - par[k].p[2]) * (par[i].p[2] - par[k].p[2]) );
-//             }
-//         }
-//     }
-// }
 
 double updateParticlesForceAndTime(particle *par, int n, double m){
+
+
 
     //Unreasonably high first value so that we correctly calculate the min
     double t_min = 10;
