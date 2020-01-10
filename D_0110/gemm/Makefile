@@ -7,7 +7,7 @@ cpu: gemm.x
 
 gpu: gemm_gpu.x
 
-
+#This -m64 is a suggestion for the mkl version to use
 gemm.x: gemm.c
 	gcc -DUSE_FLOAT $^ -m64 -I${MKLROOT}/include $(MKL)  -o $@
 
