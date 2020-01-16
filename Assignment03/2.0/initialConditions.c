@@ -18,9 +18,8 @@ typedef struct {
     double E;
 } particle;
 
-particle * particleInitialize(int n, int size, double m, int rank, double x_border_left, double x_border_right); 
-void particleWrite(int rank, int size, particle *par, int n, int procParticles);
-particle *domainDecomposition(int rank, int size, particle *par, int n, int procParticles);
+void particleInitialize(int n, int size, double m, int rank); 
+void domainDecomposition(int rank, int size, particle *par, int n, int procParticles);
 
 int main(int argc, char **argv){
 
@@ -44,53 +43,16 @@ int main(int argc, char **argv){
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    //Define number of variables
-    const int ownParsNum = N/size + (rank < N%size);
-    const int otherParsNum = N - ownParsNum;
-
-    //Defining our MPI_DataType
-    // int nitems = 4;
-    // MPI_Datatype types[nitems];
-    // MPI_Datatype MPI_PARTICLE;
-    // MPI_Aint offsets[nitems];
-    // int blocklenghts[nitems];
-
-    // types[0] = MPI_DOUBLE;
-    // types[1] = MPI_DOUBLE;
-    // types[2] = MPI_DOUBLE;
-    // types[3] = MPI_DOUBLE;
-
-    // offsets[0] = offsetof(particle,p);
-    // offsets[1] = offsetof(particle,v);
-    // offsets[2] = offsetof(particle,F);
-    // offsets[3] = offsetof(particle,E);
-
-    // blocklenghts[0] = 3;
-    // blocklenghts[1] = 3;
-    // blocklenghts[2] = 3;
-    // blocklenghts[3] = 1;
-
-    // MPI_Type_create_struct(nitems,blocklenghts,offsets,types,&MPI_PARTICLE);
-    // MPI_Type_commit(&MPI_PARTICLE);
-
-    //Per process parameter initialization
-    
-    snprintf(outputFileName, sizeof(outputFileName), "Debug_rank_%d.txt", rank);
-    double x_border_left = 1. / size * rank;
-    double x_border_right = 1. / size * (rank + 1);
-    int seed = defaultSeed * (rank+1);
-    
+       
     //1. Each process writes n/p particles to the file and stores them    
-
-    particle *ownPars = particleInitialize(N, size, m, rank, x_border_left, x_border_right);
+    particleInitialize(N, size, m, rank);
 
     MPI_Finalize();
 
 }
 
 
-particle * particleInitialize(int n, int size, double m, int rank, double x_border_left, double x_border_right){
+void particleInitialize(int n, int size, double m, int rank){
 
     //Let's set a proper seed
     int seed = rank*10 + 1; 
@@ -138,12 +100,9 @@ particle * particleInitialize(int n, int size, double m, int rank, double x_bord
 
         par[i].E = 1./2. * m * par[i].v[0] * par[i].v[0] + par[i].v[1] * par[i].v[1] + par[i].v[2] * par[i].v[2];
 
-        
     }
 
-    particle *slicePar=domainDecomposition(rank, size, par, n, procParticles);
-
-    return slicePar;
+    domainDecomposition(rank, size, par, n, procParticles);
 
 }
 
@@ -158,7 +117,12 @@ int compareParticles(const void *p1, const void *p2){
             return 0;
 }
 
-particle *domainDecomposition(int rank, int size, particle *par, int n, int procParticles){
+//TODO:We can go up to 10000, then something happens: writev:Bad address. Bad news
+//BTW, let's not wrap our head around, we need to shrink the input that is actually put on the file.
+void domainDecomposition(int rank, int size, particle *par, int n, int procParticles){
+
+    //We will need this for a future Asynchronous send
+    MPI_Request req;
 
     //MPI custom type declaration
     int nitems = 4;
@@ -221,7 +185,7 @@ particle *domainDecomposition(int rank, int size, particle *par, int n, int proc
         exit(-1);
     }
 
-    
+
     for(int k = 0; k < size; ++k)
         if(rank != k)
             MPI_Send(&procOffsets[k], 1, MPI_INT, k, rank + 50, MPI_COMM_WORLD);
@@ -252,6 +216,7 @@ particle *domainDecomposition(int rank, int size, particle *par, int n, int proc
             exit(-1);
         }      
         
+
         //TODO:check indexes because the buffer is actually incorrect when sending to rank 1 from rank 0
         //Send
         while( i-prevI < procOffsets[k]){
@@ -260,8 +225,11 @@ particle *domainDecomposition(int rank, int size, particle *par, int n, int proc
             ++i;
         }
 
+        //TODO:This is a deadlock for big arrays
+        //It seems like we need asynchronous send
+ 
         if(k != rank)
-            MPI_Send(buffer, procOffsets[k], MPI_PARTICLE, k, rank, MPI_COMM_WORLD);
+            MPI_Isend(buffer, procOffsets[k], MPI_PARTICLE, k, rank,MPI_COMM_WORLD, &req);
 
         #if defined(DEBUG)
             sleep(1*rank);
@@ -369,7 +337,14 @@ particle *domainDecomposition(int rank, int size, particle *par, int n, int proc
         }
     #endif
     
-
+    //Let's wait everybody here before we actually reuse the buffer
+    MPI_Wait(&req,MPI_STATUS_IGNORE);
+    
+    //Let's free useless stuff here
+    //free(par);
+    free(procOffsets);
+    free(procReceiveOffsets);
+    
     //FILE WRITING SECTION
     //Here we will use MPI I/O to write on the same file the slices
     //Each process will occupy the position of the file given by its rank.
@@ -395,62 +370,16 @@ particle *domainDecomposition(int rank, int size, particle *par, int n, int proc
     #endif
 
     MPI_File fhw;
-	MPI_File_open(MPI_COMM_WORLD, "initialConditions.csv", MPI_MODE_CREATE|MPI_MODE_WRONLY, MPI_INFO_NULL, &fhw);
+	MPI_File_open(MPI_COMM_WORLD, "initialConditions.kappa", MPI_MODE_CREATE|MPI_MODE_WRONLY, MPI_INFO_NULL, &fhw);
 
     int fileOffset = 0;
 
     for(int k = 0; k < rank; k++)
         fileOffset += allSlicesParticles[k];
- 
-    MPI_File_write_at(fhw, fileOffset*sizeof(particle), par, sliceParticlesDim, MPI_PARTICLE, MPI_STATUS_IGNORE);
-    MPI_File_close(&fhw);
-
-    return sliceParticles;    
-
-}
-
-void particleWrite(int rank, int size, particle *par, int n, int procParticles){
-
-    MPI_File fhw;
-	MPI_File_open(MPI_COMM_WORLD, "ic.csv", MPI_MODE_CREATE|MPI_MODE_WRONLY, MPI_INFO_NULL, &fhw);
-
-
-    int nitems = 4;
-    MPI_Datatype types[nitems];
-    MPI_Datatype MPI_PARTICLE;
-    MPI_Aint offsets[nitems];
-    int blocklenghts[nitems];
-
-    types[0] = MPI_DOUBLE;
-    types[1] = MPI_DOUBLE;
-    types[2] = MPI_DOUBLE;
-    types[3] = MPI_DOUBLE;
-
-    offsets[0] = offsetof(particle,p);
-    offsets[1] = offsetof(particle,v);
-    offsets[2] = offsetof(particle,F);
-    offsets[3] = offsetof(particle,E);
-
-    blocklenghts[0] = 3;
-    blocklenghts[1] = 3;
-    blocklenghts[2] = 3;
-    blocklenghts[3] = 1;
-
-    MPI_Type_create_struct(nitems,blocklenghts,offsets,types,&MPI_PARTICLE);
-    MPI_Type_commit(&MPI_PARTICLE);
-
-    int offset;
-
-    if(rank < n%size)
-        offset = rank * (n/size + 1);
-    else
-        offset = rank * n/size + n%size;
-
-    #if defined(DEBUG)
-        printf("Rank %d here. This is my offset: %d\n", rank, offset);
-    #endif
-
-    MPI_File_write_at(fhw, offset*sizeof(particle), par, procParticles, MPI_PARTICLE, MPI_STATUS_IGNORE);
+    
+    printf("I am rank %d and this is my fileOffset: %d\n", rank, fileOffset);
+    //TODO:It is actually the write function that it's causing the bad address error.
+    //MPI_File_write_at(fhw, fileOffset*sizeof(particle), par, sliceParticlesDim, MPI_PARTICLE, MPI_STATUS_IGNORE);
     MPI_File_close(&fhw);
 
 }

@@ -1,0 +1,20 @@
+#!/bin/bash
+#Some variables that we expect as input
+PROC_NUM=$1
+N=$2
+VERSION=$3
+#For now let's keep it simple
+if [ $# -ne 5 ]
+then
+    echo "No input parameters given, default parameters are going to be used"
+    echo "Usage: ./run numberOfMPIProcess N"
+    PROC_NUM=4
+fi
+
+mpirun -np ${PROC_NUM} ./initialConditions ${N}
+
+#OpenMP Version
+#./openBody
+
+#MPI Version
+mpirun -np ${PROC_NUM} ./MPIBody ${N}
